@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pieski do głaskania</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: #4a6fa5;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            display: inline-block;
+        }
+
+        h1:after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 4px;
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+            border-radius: 2px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            margin-top: 15px;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 900px;
+            gap: 30px;
+        }
+
+        .stats-panel {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4a6fa5;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        .dog-display {
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 450px;
+        }
+
+        .dog-image-container {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            margin-bottom: 30px;
+            border: 8px solid #f8f9fa;
+            transition: transform 0.3s;
+        }
+
+        .dog-image-container:hover {
+            transform: scale(1.02);
+        }
+
+        .dog-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .pet-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .heart {
+            position: absolute;
+            color: #ff6b8b;
+            font-size: 24px;
+            opacity: 0;
+            animation: floatUp 1s forwards;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1); opacity: 0; }
+        }
+
+        .pet-btn {
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+            border: none;
+            padding: 18px 45px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 154, 158, 0.4);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .pet-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(255, 154, 158, 0.5);
+        }
+
+        .pet-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 5px 15px rgba(255, 154, 158, 0.4);
+        }
+
+        .pet-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .dog-info {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .dog-name {
+            font-size: 2rem;
+            color: #4a6fa5;
+            margin-bottom: 5px;
+        }
+
+        .dog-rarity {
+            font-size: 1.1rem;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .common { background-color: #e8f5e9; color: #2e7d32; }
+        .uncommon { background-color: #e3f2fd; color: #1565c0; }
+        .rare { background-color: #f3e5f5; color: #7b1fa2; }
+        .epic { background-color: #fff3e0; color: #ef6c00; }
+        .legendary { background-color: #ffebee; color: #c62828; }
+        .mythical { background-color: #fce4ec; color: #ad1457; }
+
+        .collection-panel {
+            width: 100%;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        }
+
+        .collection-title {
+            font-size: 1.5rem;
+            color: #4a6fa5;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .collection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+        }
+
+        .collection-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+
+        .collection-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .collection-item.unlocked {
+            border-color: #4a6fa5;
+        }
+
+        .collection-item.locked {
+            opacity: 0.5;
+            filter: grayscale(80%);
+        }
+
+        .collection-img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 8px;
+            border: 3px solid white;
+        }
+
+        .collection-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .timer {
+            font-size: 1.2rem;
+            color: #666;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, #4a6fa5, #6a98d3);
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        .instructions {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        }
+
+        .instructions h3 {
+            color: #4a6fa5;
+            margin-bottom: 10px;
+        }
+
+        .instructions p {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .rarity-info {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .rarity-item {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+            margin-bottom: 10px;
+        }
+
+        .rarity-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        footer {
+            margin-top: 30px;
+            color: #777;
+            text-align: center;
+            font-size: 0.9rem;
+            padding: 20px;
+        }
+
+        /* Responsywność */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .stats-panel {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .stat-box {
+                min-width: 100%;
+            }
+            
+            .dog-image-container {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .collection-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+        }
+
+        /* Efekty specjalne */
+        .special-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3;
+            opacity: 0;
+        }
+
+        .rainbow {
+            background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
+            background-size: 400% 400%;
+            animation: rainbow 2s linear;
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; opacity: 0.7; }
+            100% { background-position: 100% 50%; opacity: 0; }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4a6fa5;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.5s;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-paw"></i> Pieski do głaskania</h1>
+        <p class="subtitle">Głaszcz psa, zdobywaj nowe rasy i zbieraj swoją kolekcję!</p>
+    </div>
+
+    <div class="game-container">
+        <div class="stats-panel">
+            <div class="stat-box">
+                <div class="stat-value" id="total-pets">0</div>
+                <div class="stat-label">Łączne głaskania</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="current-streak">0</div>
+                <div class="stat-label">Aktualna seria</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="dogs-unlocked">1/24</div>
+                <div class="stat-label">Odblokowane psy</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="time-left">100s</div>
+                <div class="stat-label">Do następnego psa</div>
+                <div class="progress-bar">
+                    <div class="progress" id="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dog-display">
+            <div class="dog-image-container">
+                <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Pies do głaskania" class="dog-image" id="dog-image">
+                <div class="pet-animation" id="pet-animation"></div>
+                <div class="special-effect" id="special-effect"></div>
+            </div>
+
+            <button class="pet-btn" id="pet-btn">
+                <i class="fas fa-hand-point-up"></i> Pogłaskaj psa!
+            </button>
+
+            <div class="dog-info">
+                <h2 class="dog-name" id="dog-name">Golden Retriever</h2>
+                <span class="dog-rarity common" id="dog-rarity">Częsty (1:2)</span>
+                <p class="timer" id="timer">Następny pies za: <span id="countdown">100</span>s</p>
+            </div>
+        </div>
+
+        <div class="collection-panel">
+            <h3 class="collection-title">Twoja kolekcja psów</h3>
+            <div class="collection-grid" id="collection-grid">
+                <!-- Kolekcja zostanie wygenerowana przez JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <h3><i class="fas fa-info-circle"></i> Jak grać?</h3>
+        <p>Klikaj przycisk "Pogłaskaj psa!" aby głaskać psa. Każde głaskanie trwa co najmniej 1 sekundę.</p>
+        <p>Co 100 sekund głaskania losowany jest nowy pies z określoną rzadkością:</p>
+        
+        <div class="rarity-info">
+            <div class="rarity-item">
+                <div class="rarity-color" style="background-color: #e8f5e9;"></div>
+                <span>Częsty (1:2) - 50% szans</span>
+            </div>
+            <div class="rarity-item">
+                <div class="rarity-color" style="background-color: #e3f2fd;"></div>
+                <span>Nietypowy (1:5) - 20% szans</span>
+            </div>
+            <div class="rarity-item">
+                <div class="rarity-color" style="background-color: #f3e5f5;"></div>
+                <span>Rzadki (1:10) - 10% szans</span>
+            </div>
+            <div class="rarity-item">
+                <div class="rarity-color" style="background-color: #fff3e0;"></div>
+                <span>Epicki (1:20) - 5% szans</span>
+            </div>
+            <div class="rarity-item">
+                <div class="rarity-color" style="background-color: #ffebee;"></div>
+                <span>Legendarny (1:50) - 2% szans</span>
+            </div>
+            <div class="rarity-item">
+                <div class="rarity-color" style="background-color: #fce4ec;"></div>
+                <span>Mityczny (1:100) - 1% szans</span>
+            </div>
+        </div>
+        
+        <p>Im rzadszego psa zdobędziesz, tym więcej punktów otrzymasz! Zbierz wszystkie 24 psy do swojej kolekcji.</p>
+    </div>
+
+    <div class="notification" id="notification">
+        <span id="notification-text">Nowy pies odblokowany!</span>
+    </div>
+
+    <footer>
+        <p>Gra "Pieski do głaskania" | Stworzono z <i class="fas fa-heart" style="color:#ff6b8b"></i> dla miłośników psów</p>
+        <p>© 2023 | Wszystkie zdjęcia psów pochodzą z Unsplash</p>
+    </footer>
+
+    <script>
+        // Dane gry
+        const gameState = {
+            totalPets: 0,
+            currentStreak: 0,
+            petTimer: 0,
+            nextDogTimer: 100,
+            isPetting: false,
+            currentDog: null,
+            unlockedDogs: new Set(),
+            allDogs: []
+        };
+
+        // Definicje rzadkości
+        const rarities = [
+            { name: "Częsty", chance: 1/2, multiplier: 1, class: "common" },
+            { name: "Nietypowy", chance: 1/5, multiplier: 2, class: "uncommon" },
+            { name: "Rzadki", chance: 1/10, multiplier: 5, class: "rare" },
+            { name: "Epicki", chance: 1/20, multiplier: 10, class: "epic" },
+            { name: "Legendarny", chance: 1/50, multiplier: 25, class: "legendary" },
+            { name: "Mityczny", chance: 1/100, multiplier: 50, class: "mythical" }
+        ];
+
+        // Lista psów z różnymi rzadkościami
+        const dogBreeds = [
+            // Częste (1:2)
+            { name: "Golden Retriever", rarity: 0, image: "https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Labrador", rarity: 0, image: "https://images.unsplash.com/photo-1561037404-61cd46aa615b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Owczarek niemiecki", rarity: 0, image: "https://images.unsplash.com/photo-1567752881298-894bb81f9379?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Buldog", rarity: 0, image: "https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            
+            // Nietypowe (1:5)
+            { name: "Husky syberyjski", rarity: 1, image: "https://images.unsplash.com/photo-1590419690008-905895e8fe0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Border Collie", rarity: 1, image: "https://images.unsplash.com/photo-1559190394-df5a28aab5c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Dalmatyńczyk", rarity: 1, image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Beagle", rarity: 1, image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            
+            // Rzadkie (1:10)
+            { name: "Shiba Inu", rarity: 2, image: "https://images.unsplash.com/photo-1568572933382-74d440642117?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Pomeranian", rarity: 2, image: "https://images.unsplash.com/photo-1591160690555-5debfba289f0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Corgi", rarity: 2, image: "https://images.unsplash.com/photo-1611003229182-34f2e5f6a9d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Mops", rarity: 2, image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            
+            // Epickie (1:20)
+            { name: "Samoyed", rarity: 3, image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Chow Chow", rarity: 3, image: "https://images.unsplash.com/photo-1596273315327-5f0597529b73?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Akita", rarity: 3, image: "https://images.unsplash.com/photo-1579168765467-3b235f938439?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Owczarek australijski", rarity: 3, image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            
+            // Legendarne (1:50)
+            { name: "Bernardyn", rarity: 4, image: "https://images.unsplash.com/photo-1600804340584-c7db2eacf0bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Dog niemiecki", rarity: 4, image: "https://images.unsplash.com/photo-1558788353-f76d92427f16?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Mastif angielski", rarity: 4, image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Owczarek kaukaski", rarity: 4, image: "https://images.unsplash.com/photo-1517849845537-4d257902454a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            
+            // Mityczne (1:100)
+            { name: "Tibetan Mastiff", rarity: 5, image: "https://images.unsplash.com/photo-1576872381142-f6a40f6f7e73?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Lhasa Apso", rarity: 5, image: "https://images.unsplash.com/photo-1570125909235-6a676c1d0f56?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Chart afgański", rarity: 5, image: "https://images.unsplash.com/photo-1559131397-f94da358a9d1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+            { name: "Pies faraona", rarity: 5, image: "https://images.unsplash.com/photo-1596492784531-6e6eb5ea9993?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" }
+        ];
+
+        // Elementy DOM
+        const totalPetsEl = document.getElementById('total-pets');
+        const currentStreakEl = document.getElementById('current-streak');
+        const dogsUnlockedEl = document.getElementById('dogs-unlocked');
+        const timeLeftEl = document.getElementById('time-left');
+        const progressBarEl = document.getElementById('progress-bar');
+        const dogImageEl = document.getElementById('dog-image');
+        const dogNameEl = document.getElementById('dog-name');
+        const dogRarityEl = document.getElementById('dog-rarity');
+        const petBtnEl = document.getElementById('pet-btn');
+        const petAnimationEl = document.getElementById('pet-animation');
+        const collectionGridEl = document.getElementById('collection-grid');
+        const countdownEl = document.getElementById('countdown');
+        const notificationEl = document.getElementById('notification');
+        const notificationTextEl = document.getElementById('notification-text');
+        const specialEffectEl = document.getElementById('special-effect');
+
+        // Inicjalizacja gry
+        function initGame() {
+            // Ustaw pierwszego psa
+            gameState.allDogs = [...dogBreeds];
+            gameState.currentDog = getRandomDog();
+            gameState.unlockedDogs.add(gameState.currentDog.name);
+            
+            // Zaktualizuj UI
+            updateDogDisplay();
+            updateStats();
+            renderCollection();
+            
+            // Rozpocznij timer
+            startTimer();
+            
+            // Ustaw obsługę kliknięcia
+            petBtnEl.addEventListener('click', startPetting);
+        }
+
+        // Losowanie nowego psa z uwzględnieniem rzadkości
+        function getRandomDog() {
+            // Losujemy rzadkość na podstawie szans
+            const random = Math.random();
+            let cumulativeChance = 0;
+            let selectedRarity = 0;
+            
+            for (let i = 0; i < rarities.length; i++) {
+                cumulativeChance += rarities[i].chance;
+                if (random <= cumulativeChance) {
+                    selectedRarity = i;
+                    break;
+                }
+            }
+            
+            // Filtruj psy o danej rzadkości
+            const dogsWithRarity = dogBreeds.filter(dog => dog.rarity === selectedRarity);
+            
+            // Losuj psa z wybranej rzadkości
+            const randomIndex = Math.floor(Math.random() * dogsWithRarity.length);
+            return dogsWithRarity[randomIndex];
+        }
+
+        // Rozpoczęcie głaskania
+        function startPetting() {
+            if (gameState.isPetting) return;
+            
+            gameState.isPetting = true;
+            petBtnEl.disabled = true;
+            
+            // Zwiększ liczniki
+            gameState.totalPets++;
+            gameState.currentStreak++;
+            gameState.petTimer += 1; // Minimum 1 sekunda głaskania
+            
+            // Animacja głaskania
+            createHeartsAnimation();
+            
+            // Aktualizuj UI
+            updateStats();
+            
+            // Odblokuj przycisk po sekundzie
+            setTimeout(() => {
+                gameState.isPetting = false;
+                petBtnEl.disabled = false;
+                
+                // Sprawdź czy czas na nowego psa
+                if (gameState.petTimer >= gameState.nextDogTimer) {
+                    getNewDog();
+                    gameState.petTimer = 0;
+                }
+            }, 1000);
+        }
+
+        // Uzyskanie nowego psa
+        function getNewDog() {
+            const oldDog = gameState.currentDog;
+            gameState.currentDog = getRandomDog();
+            
+            // Dodaj do odblokowanych
+            gameState.unlockedDogs.add(gameState.currentDog.name);
+            
+            // Aktualizuj UI
+            updateDogDisplay();
+            updateStats();
+            renderCollection();
+            
+            // Pokaz powiadomienie
+            showNotification(`Zdobyto nowego psa: ${gameState.currentDog.name} (${rarities[gameState.currentDog.rarity].name})!`);
+            
+            // Efekt specjalny dla rzadkich psów
+            if (gameState.currentDog.rarity >= 3) {
+                showSpecialEffect();
+            }
+            
+            // Zresetuj timer
+            gameState.nextDogTimer = 100;
+        }
+
+        // Aktualizacja wyświetlanego psa
+        function updateDogDisplay() {
+            const dog = gameState.currentDog;
+            const rarity = rarities[dog.rarity];
+            
+            dogImageEl.src = dog.image;
+            dogNameEl.textContent = dog.name;
+            dogRarityEl.textContent = `${rarity.name} (1:${Math.round(1/rarity.chance)})`;
+            dogRarityEl.className = `dog-rarity ${rarity.class}`;
+            
+            // Animacja zmiany psa
+            dogImageEl.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                dogImageEl.style.transform = 'scale(1)';
+            }, 300);
+        }
+
+        // Aktualizacja statystyk
+        function updateStats() {
+            totalPetsEl.textContent = gameState.totalPets;
+            currentStreakEl.textContent = gameState.currentStreak;
+            dogsUnlockedEl.textContent = `${gameState.unlockedDogs.size}/${dogBreeds.length}`;
+            
+            // Aktualizuj timer
+            const timeRemaining = gameState.nextDogTimer - gameState.petTimer;
+            timeLeftEl.textContent = `${timeRemaining}s`;
+            countdownEl.textContent = timeRemaining;
+            
+            // Aktualizuj pasek postępu
+            const progress = (gameState.petTimer / gameState.nextDogTimer) * 100;
+            progressBarEl.style.width = `${progress}%`;
+        }
+
+        // Renderowanie kolekcji
+        function renderCollection() {
+            collectionGridEl.innerHTML = '';
+            
+            dogBreeds.forEach(dog => {
+                const isUnlocked = gameState.unlockedDogs.has(dog.name);
+                const rarity = rarities[dog.rarity];
+                
+                const item = document.createElement('div');
+                item.className = `collection-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+                item.innerHTML = `
+                    <img src="${dog.image}" alt="${dog.name}" class="collection-img">
+                    <div class="collection-name">${dog.name}</div>
+                `;
+                
+                // Podświetl aktualnego psa
+                if (dog.name === gameState.currentDog?.name) {
+                    item.style.boxShadow = '0 0 0 3px #4a6fa5';
+                }
+                
+                item.addEventListener('click', () => {
+                    if (isUnlocked) {
+                        // Ustaw jako aktualnego psa
+                        gameState.currentDog = dog;
+                        updateDogDisplay();
+                        renderCollection();
+                    }
+                });
+                
+                collectionGridEl.appendChild(item);
+            });
+        }
+
+        // Animacja serduszek
+        function createHeartsAnimation() {
+            // Tworzenie 3-5 serduszek
+            const heartCount = 3 + Math.floor(Math.random() * 3);
+            
+            for (let i = 0; i < heartCount; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.innerHTML = '<i class="fas fa-heart"></i>';
+                
+                // Losowa pozycja
+                const x = 20 + Math.random() * 60;
+                const y = 20 + Math.random() * 60;
+                heart.style.left = `${x}%`;
+                heart.style.top = `${y}%`;
+                
+                // Losowe opóźnienie
+                heart.style.animationDelay = `${i * 0.2}s`;
+                
+                petAnimationEl.appendChild(heart);
+                
+                // Usuń po animacji
+                setTimeout(() => {
+                    heart.remove();
+                }, 1000);
+            }
+        }
+
+        // Efekt specjalny dla rzadkich psów
+        function showSpecialEffect() {
+            const rarity = rarities[gameState.currentDog.rarity];
+            
+            // Dla epickich i lepszych - tęczowy efekt
+            if (gameState.currentDog.rarity >= 3) {
+                specialEffectEl.className = 'special-effect rainbow';
+                specialEffectEl.style.display = 'block';
+                
+                setTimeout(() => {
+                    specialEffectEl.className = 'special-effect';
+                    specialEffectEl.style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        // Pokazanie powiadomienia
+        function showNotification(message) {
+            notificationTextEl.textContent = message;
+            notificationEl.classList.add('show');
+            
+            setTimeout(() => {
+                notificationEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // Timer gry
+        function startTimer() {
+            setInterval(() => {
+                if (!gameState.isPetting) {
+                    gameState.petTimer++;
+                    updateStats();
+                    
+                    // Sprawdź czy czas na nowego psa
+                    if (gameState.petTimer >= gameState.nextDogTimer) {
+                        getNewDog();
+                        gameState.petTimer = 0;
+                    }
+                }
+            }, 1000);
+        }
+
+        // Inicjalizacja gry po załadowaniu strony
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
